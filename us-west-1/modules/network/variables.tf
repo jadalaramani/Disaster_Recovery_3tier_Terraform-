@@ -3,6 +3,9 @@ variable "region" {
   type        = string
   default     = "us-east-1"
 }
+variable "dr_region" {
+  default = "us-west-2"
+}
 
 variable "vpc_cidr" {
   description = "CIDR block for the VPC"
