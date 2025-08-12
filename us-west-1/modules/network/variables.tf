@@ -4,6 +4,7 @@ variable "region" {
   default     = "us-east-1"
 }
 variable "dr_region" {
+  type = string
   default = "us-west-2"
 }
 
