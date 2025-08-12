@@ -69,7 +69,7 @@ value = module.security_group.security_group_id
 }
 
 module "rds" {
-  source                = "./modules/rds"
+  source                = "./us-east-1/modules/rds"
     providers = {
     aws = aws.primary
   }
@@ -130,7 +130,7 @@ module "secondary_security_group" {
 }
 
 module "secondary_rds" {
-  source                = "./modules/rds"
+  source                = "./us-east-1/modules/rds"
   providers = {
     aws = aws.secondary
   }
