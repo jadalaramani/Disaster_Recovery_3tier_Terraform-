@@ -92,11 +92,6 @@ module "network" {
     { cidr = "170.20.7.0/24", az = "us-west-2a" },
     { cidr = "170.20.8.0/24", az = "us-west-2b" }
   ]
-
-
-output "vpc_output_from_nwmodule" {
-  
-  value = module.network.vpc_id
 }
 
 # # Module: Security Groups
@@ -114,10 +109,4 @@ module "security_group" {
   egress_cidr_blocks = ["0.0.0.0/0"]
 }
 
-output "security_group_id" {
-value = module.security_group.security_group_id
-}
 
-  domain_name = "b15facebook.xyz"
-  san_names   = ["*.b15facebook.xyz"]
-}
