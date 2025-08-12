@@ -74,7 +74,7 @@ value = module.security_group.security_group_id
 
 
 
-module "network" {
+module "secondary_network" {
   source = "./us-west-2/modules/network"
 
   vpc_cidr =  "170.20.0.0/16"
@@ -95,7 +95,7 @@ module "network" {
 }
 
 # # Module: Security Groups
-module "security_group" {
+module "secondary_security_group" {
   source              = "./us-west-2/modules/security"
   vpc_id             = module.network.vpc_id
   sg_name            = "MAIN-security-group"
