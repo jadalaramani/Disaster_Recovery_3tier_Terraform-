@@ -65,3 +65,8 @@ variable "preferred_backup_window" {
   type    = string
   default = "03:00-04:00"
 }
+variable "replicate_source_db" {
+  description = "ARN or ID of the source DB instance if creating a read replica"
+  type        = string
+  default     = null
+}
