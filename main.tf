@@ -68,11 +68,31 @@ output "security_group_id" {
 value = module.security_group.security_group_id
 }
 
+module "rds" {
+  source                = "./modules/rds"
+    providers = {
+    aws = aws.primary
+  }
+  db_identifier         = "app-db"
+  db_engine             = "mysql"
+  db_instance_class     = "db.t3.micro"
+  db_allocated_storage  = 25
+  db_name               = "test"
+  db_username           = "admin"
+  db_password           = "password123"  # Consider using AWS Secrets Manager
+  db_security_group_id  = module.security_group.security_group_id
+  db_subnet_ids         = [
+    module.network.private_subnet_ids[4],
+    module.network.private_subnet_ids[5]
+  ]
+
+  backup_retention_period = 7  
+
+}
 
 
 
-
-
+# Secondary region
 
 module "secondary_network" {
   source = "./us-west-2/modules/network"
@@ -107,6 +127,24 @@ module "secondary_security_group" {
   egress_to_port     = 0
   egress_protocol    = "-1"
   egress_cidr_blocks = ["0.0.0.0/0"]
+}
+
+module "secondary_rds" {
+  source                = "./modules/rds"
+  providers = {
+    aws = aws.secondary
+  }
+  is_read_replica       = true
+  source_db_arn         = module.rds.db_arn # ✅ Automatic link to primary DB
+  db_instance_class     = "db.t3.micro"
+  db_security_group_id  = module.secondary_security_group.security_group_id
+  db_subnet_ids         = [
+    module.secondary_network.private_subnet_ids[0],
+    module.secondary_network.private_subnet_ids[1]
+  ]
+
+  backup_retention_period = 7
+  preferred_backup_window = "03:00-04:00"
 }
 
 
