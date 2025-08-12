@@ -50,3 +50,18 @@ variable "db_subnet_ids" {
   description = "List of subnet IDs for the RDS subnet group"
   type        = list(string)
 }
+
+variable "source_db_arn" {
+  type    = string
+  default = ""
+}
+
+variable "backup_retention_period" {
+  type    = number
+  default = 7
+}
+
+variable "preferred_backup_window" {
+  type    = string
+  default = "03:00-04:00"
+}
