@@ -68,26 +68,25 @@ output "security_group_id" {
 value = module.security_group.security_group_id
 }
 
+# Primary RDS
 module "rds" {
-  source                = "./us-east-1/modules/rds"
-    providers = {
+  source               = "./us-east-1/modules/primary"
+  providers = {
     aws = aws.primary
   }
-  db_identifier         = "app-db"
-  db_engine             = "mysql"
-  db_instance_class     = "db.t3.micro"
-  db_allocated_storage  = 25
-  db_name               = "test"
-  db_username           = "admin"
-  db_password           = "password123"  # Consider using AWS Secrets Manager
-  db_security_group_id  = module.security_group.security_group_id
-  db_subnet_ids         = [
-    module.network.private_subnet_ids[4],
-    module.network.private_subnet_ids[5]
+  db_identifier        = "app-db"
+  db_engine            = "mysql"
+  db_instance_class    = "db.t3.micro"
+  db_allocated_storage = 25
+  db_name              = "test"
+  db_username          = "admin"
+  db_password          = "password123"
+  db_security_group_id = module.security_group.security_group_id
+  db_subnet_ids        = [
+    module.network.private_subnet_ids[0],
+    module.network.private_subnet_ids[1]
   ]
-
-  backup_retention_period = 7  
-
+  backup_retention_period = 7
 }
 
 
@@ -130,23 +129,20 @@ module "secondary_security_group" {
 }
 
 module "secondary_rds" {
-  source                = "./us-east-1/modules/rds"
+  source               = "./us-east-1/modules/primary"
   providers = {
     aws = aws.secondary
   }
-replicate_source_db = module.rds.db_identifier_out
- # source_db_arn         = module.rds.db_arn # ✅ Automatic link to primary DB
-  db_username           = "admin"
-  db_password           = "password123"  # Consider using AWS Secrets Manager
-  db_instance_class     = "db.t3.micro"
-  db_security_group_id  = module.secondary_security_group.security_group_id
-  db_subnet_ids         = [
+
+  replicate_source_db  = module.rds.db_arn
+  db_instance_class    = "db.t3.micro"
+  db_security_group_id = module.secondary_security_group.security_group_id
+  db_subnet_ids        = [
     module.secondary_network.private_subnet_ids[0],
     module.secondary_network.private_subnet_ids[1]
   ]
-
   backup_retention_period = 7
-  preferred_backup_window = "03:00-04:00"
 }
+
 
 
