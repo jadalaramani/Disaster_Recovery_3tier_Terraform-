@@ -70,10 +70,4 @@ variable "replicate_source_db" {
   type        = string
   default     = null
 }
-output "db_arn" {
-  value = aws_db_instance.db.arn
-}
 
-output "db_identifier_out" {
-  value = aws_db_instance.db.id
-}
