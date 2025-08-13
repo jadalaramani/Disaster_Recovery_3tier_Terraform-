@@ -133,6 +133,8 @@ module "secondary_rds" {
   providers = {
     aws = aws.secondary
   }
+  db_identifier        = "app-db-replica"
+  db_engine            = "mysql"
 
   replicate_source_db  = module.rds.db_arn
   db_instance_class    = "db.t3.micro"
