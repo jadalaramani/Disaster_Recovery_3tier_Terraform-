@@ -136,6 +136,8 @@ module "secondary_rds" {
   }
 replicate_source_db = module.rds.db_identifier_out
  # source_db_arn         = module.rds.db_arn # ✅ Automatic link to primary DB
+  db_username           = "admin"
+  db_password           = "password123"  # Consider using AWS Secrets Manager
   db_instance_class     = "db.t3.micro"
   db_security_group_id  = module.secondary_security_group.security_group_id
   db_subnet_ids         = [
