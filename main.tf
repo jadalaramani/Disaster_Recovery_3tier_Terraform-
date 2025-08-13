@@ -133,7 +133,9 @@ module "secondary_security_group" {
 
 module "secondary_rds" {
   source               = "./us-east-1/modules/primary"
-
+    providers = {
+    aws = aws.secondary
+  }
   db_identifier        = "app-db-replica"
   db_engine            = "mysql"
 
