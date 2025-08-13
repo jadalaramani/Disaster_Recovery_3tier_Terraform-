@@ -1,3 +1,13 @@
+provider "aws" {
+  region = "us-east-1"
+}
+
+provider "aws" {
+  alias  = "secondary"
+  region = "us-west-2"
+}
+
+
 # DB Subnet Group
 resource "aws_db_subnet_group" "db_subnet_group" {
   name       = "${var.db_identifier}-subnet-group"
