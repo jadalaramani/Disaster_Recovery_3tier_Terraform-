@@ -14,5 +14,5 @@ output "rds_subnet_group" {
 }
 
 output "db_arn" {
-  value = var.replicate_source_db == "" ? aws_db_instance.rds[0].arn : aws_db_instance.replica[0].arn
+  value = var.replicate_source_db == "" ? aws_db_instance.db[0].arn : aws_db_instance.replica[0].arn
 }
