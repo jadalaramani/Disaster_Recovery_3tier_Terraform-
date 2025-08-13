@@ -22,7 +22,7 @@ resource "aws_db_instance" "primary" {
 
 # us-west-2 DB subnet group
 resource "aws_db_subnet_group" "secondary_db_subnet_group" {
- #  provider   = aws.secondary
+  provider   = aws.secondary
   name       = "secondary-db-subnet-group"
   subnet_ids = [
     module.secondary_network.private_subnet_ids[0], # subnet 7
@@ -35,7 +35,7 @@ resource "aws_db_subnet_group" "secondary_db_subnet_group" {
 
 # Read Replica
 resource "aws_db_instance" "replica" {
- # provider   = aws.secondary
+  provider   = aws.secondary
   count                   = var.replicate_source_db != "" ? 1 : 0
   replicate_source_db     = var.replicate_source_db # MUST be ARN
   instance_class          = var.db_instance_class
