@@ -1,7 +1,7 @@
 variable "db_identifier" {
   description = "The identifier for the RDS instance"
   type        = string
-  # default     = "app-db"
+  default     = "app-db"
 }
 
 variable "db_engine" {
