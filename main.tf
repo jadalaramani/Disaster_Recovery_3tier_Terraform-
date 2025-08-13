@@ -96,9 +96,6 @@ module "rds" {
 
 module "secondary_network" {
   source = "./us-west-2/modules/network"
-  providers = {
-    aws = aws.secondary
-  }
   vpc_cidr =  "170.21.0.0/16"
   
    public_subnets = [  
