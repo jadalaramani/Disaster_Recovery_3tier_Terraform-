@@ -16,3 +16,12 @@ output "rds_subnet_group" {
 output "db_arn" {
   value = var.replicate_source_db == "" ? aws_db_instance.db.arn : aws_db_instance.replica[0].arn
 }
+output "db_identifier_out" {
+  description = "The DB identifier"
+  value       = aws_db_instance.db.identifier
+}
+
+output "db_arn" {
+  description = "The ARN of the RDS instance"
+  value       = aws_db_instance.db.arn
+}
