@@ -116,7 +116,7 @@ module "secondary_network" {
 # # Module: Security Groups
 module "secondary_security_group" {
   source              = "./us-west-2/modules/security"
-  vpc_id             = module.network.vpc_id
+  vpc_id             = module.seconadry_network.vpc_id
   sg_name            = "MAIN-security-group"
   ingress_from_port  = 0
   ingress_to_port    = 0
