@@ -134,7 +134,7 @@ module "secondary_rds" {
   providers = {
     aws = aws.secondary
   }
-  is_read_replica       = true
+  replicate_source_db = module.primary_rds.db_arn
   source_db_arn         = module.rds.db_arn # ✅ Automatic link to primary DB
   db_instance_class     = "db.t3.micro"
   db_security_group_id  = module.secondary_security_group.security_group_id
