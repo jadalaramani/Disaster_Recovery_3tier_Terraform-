@@ -1,13 +1,14 @@
 # Primary region provider
 provider "aws" {
-  region = "us-east-1"
   alias  = "primary"
+  region = "us-east-1"
 }
 
 # Secondary region provider
 provider "aws" {
-  region = "us-west-2"
   alias  = "secondary"
+  region = "us-west-2"
+  
 }
 
 module "network" {
@@ -95,7 +96,9 @@ module "rds" {
 
 module "secondary_network" {
   source = "./us-west-2/modules/network"
-
+  providers = {
+    aws = aws.secondary
+  }
   vpc_cidr =  "170.21.0.0/16"
   
    public_subnets = [  
@@ -115,6 +118,9 @@ module "secondary_network" {
 
 # # Module: Security Groups
 module "secondary_security_group" {
+  providers = {
+    aws = aws.secondary
+  }
   source              = "./us-west-2/modules/security"
   vpc_id             = module.seconadry_network.vpc_id
   sg_name            = "MAIN-security-group"
