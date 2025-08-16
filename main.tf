@@ -72,8 +72,11 @@ value = module.security_group.security_group_id
 # Primary RDS
 module "rds" {
   source               = "./us-east-1/modules/primary"
+   create_primary     = true
+  create_replica     = false
   providers = {
     aws = aws.primary
+     
   }
   db_identifier        = "app-db"
   db_engine            = "mysql"
@@ -96,6 +99,9 @@ module "rds" {
 
 module "secondary_network" {
   source = "./us-west-2/modules/network"
+    providers = {
+    aws = aws.secondary
+  }
   vpc_cidr =  "170.21.0.0/16"
   
    public_subnets = [  
@@ -119,7 +125,7 @@ module "secondary_security_group" {
     aws = aws.secondary
   }
   source              = "./us-west-2/modules/security"
-  vpc_id             = module.seconadry_network.vpc_id
+  vpc_id             = module.secondary_network.vpc_id
   sg_name            = "MAIN-security-group"
   ingress_from_port  = 0
   ingress_to_port    = 0
@@ -133,6 +139,8 @@ module "secondary_security_group" {
 
 module "secondary_rds" {
   source               = "./us-east-1/modules/primary"
+   create_primary     = false
+  create_replica     = true
     providers = {
     aws = aws.secondary
   }

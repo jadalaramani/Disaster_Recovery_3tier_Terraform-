@@ -48,3 +48,6 @@ variable "backup_retention_period" {
   type    = number
   default = 7
 }
+variable "create_primary" { type = bool }
+variable "create_replica" { type = bool }
+

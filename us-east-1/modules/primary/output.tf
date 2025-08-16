@@ -7,3 +7,7 @@ output "db_identifier_out" {
   description = "The DB identifier"
   value       = var.replicate_source_db == "" ? aws_db_instance.primary[0].identifier : aws_db_instance.replica[0].identifier
 }
+
+output "db_instance_id" {
+  value = try(aws_db_instance.primary[0].id, "")
+}
