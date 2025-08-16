@@ -151,8 +151,8 @@ module "secondary_rds" {
   db_instance_class    = "db.t3.micro"
   db_security_group_id = module.secondary_security_group.security_group_id
   db_subnet_ids        = [
-    module.secondary_network.private_subnet_ids[0],
-    module.secondary_network.private_subnet_ids[1]
+    module.secondary_network.private_subnet_ids[4],
+    module.secondary_network.private_subnet_ids[5]
   ]
   backup_retention_period = 7
 }
