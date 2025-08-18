@@ -93,17 +93,17 @@ value = module.security_group.security_group_id
 #   backup_retention_period = 7
 # }
 
-# # Module: Load Balancers
-module "alb" {
-  source            = "./us-east-1/modules/load_balancers"
-  frontend_alb_name = "frontend-alb"
-  backend_alb_name  = "backend-alb"
-  security_group_id = module.security_group.security_group_id
-  public_subnet_ids = [module.network.public_subnet_ids[1], module.network.public_subnet_ids[0]]
-  frontend_tg_name  = "frontend-tg"
-  backend_tg_name   = "backend-tg"
-  vpc_id            = module.network.vpc_id
-}
+# # Module: Primary Load Balancers
+# module "alb" {
+#   source            = "./us-east-1/modules/load_balancers"
+#   frontend_alb_name = "frontend-alb"
+#   backend_alb_name  = "backend-alb"
+#   security_group_id = module.security_group.security_group_id
+#   public_subnet_ids = [module.network.public_subnet_ids[1], module.network.public_subnet_ids[0]]
+#   frontend_tg_name  = "frontend-tg"
+#   backend_tg_name   = "backend-tg"
+#   vpc_id            = module.network.vpc_id
+# }
 
 
 # Secondary region
@@ -170,17 +170,32 @@ module "secondary_security_group" {
 #   backup_retention_period = 7
 # }
 
-module "secondary_alb" {
-  source            = "./us-west-2/modules/load_balancers"
-    providers = {
-    aws = aws.secondary
-  }
-  frontend_alb_name = "frontend-alb"
-  backend_alb_name  = "backend-alb"
-  security_group_id = module.secondary_security_group.security_group_id
-  public_subnet_ids = [module.secondary_network.public_subnet_ids[1], module.secondary_network.public_subnet_ids[0]]
-  frontend_tg_name  = "frontend-tg"
-  backend_tg_name   = "backend-tg"
-  vpc_id            = module.secondary_network.vpc_id
-}
+#############Secondary Alb ##################
 
+# module "secondary_alb" {
+#   source            = "./us-west-2/modules/load_balancers"
+#     providers = {
+#     aws = aws.secondary
+#   }
+#   frontend_alb_name = "frontend-alb"
+#   backend_alb_name  = "backend-alb"
+#   security_group_id = module.secondary_security_group.security_group_id
+#   public_subnet_ids = [module.secondary_network.public_subnet_ids[1], module.secondary_network.public_subnet_ids[0]]
+#   frontend_tg_name  = "frontend-tg"
+#   backend_tg_name   = "backend-tg"
+#   vpc_id            = module.secondary_network.vpc_id
+# }
+
+module "backup" {
+  source              = "./us-west-2/modules/backup"
+  vault_name          = "dr-backup-vault"
+  plan_name           = "dr-backup-plan"
+  rule_name           = "daily-backup-rule"
+  source_region       = "us-east-1"
+  destination_region  = "us-west-2"
+
+  resource_assignments = [
+    "arn:aws:ec2:us-east-1:141559732042:instance/i-002a75b4b9ded12ac",
+    "arn:aws:ec2:us-east-1:141559732042:instance/i-0f1829985058c5c4c"
+  ]
+}
