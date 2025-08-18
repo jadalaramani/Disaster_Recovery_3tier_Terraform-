@@ -43,12 +43,12 @@ variable "backend_tg_arn" {
   type        = string
 }
 
-variable "frontend_lt_id" {
+variable "frontend_lt_west_id" {
   description = "Launch template ID for frontend ASG"
   type        = string
 }
 
-variable "backend_lt_id" {
+variable "backend_lt_west_id" {
   description = "Launch template ID for backend ASG"
   type        = string
 }

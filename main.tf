@@ -94,15 +94,59 @@ value = module.security_group.security_group_id
 # }
 
 # # Module: Primary Load Balancers
-# module "alb" {
-#   source            = "./us-east-1/modules/load_balancers"
-#   frontend_alb_name = "frontend-alb"
-#   backend_alb_name  = "backend-alb"
+module "alb" {
+  source            = "./us-east-1/modules/load_balancers"
+  frontend_alb_name = "frontend-alb"
+  backend_alb_name  = "backend-alb"
+  security_group_id = module.security_group.security_group_id
+  public_subnet_ids = [module.network.public_subnet_ids[1], module.network.public_subnet_ids[0]]
+  frontend_tg_name  = "frontend-tg"
+  backend_tg_name   = "backend-tg"
+  vpc_id            = module.network.vpc_id
+}
+
+## Module: Lauch Template
+module "launch_templates" {
+  source              = "./us-east-1/modules/launch_templates"
+  frontend_lt_name    = "frontend-lt"
+  backend_lt_name     = "backend-lt"
+  key_name            = "ramanikey"
+  ami_id_frontend     = "ami-0a70951509ea27356"
+  ami_id_backend      = "ami-0084f9ebbb4f07bcd"
+  instance_type       = "t2.micro"
+  frontend_user_data  = "frontend.sh"
+  backend_user_data   = "backend.sh"
+  security_group_id   = module.security_group.security_group_id
+
+}
+
+module "autoscaling" {
+  source               = "./us-east-1/modules/asg"
+  frontend_asg_name    = "frontend-asg"
+  backend_asg_name     = "backend-asg"
+  asg_min_size         = 1
+  asg_max_size         = 1
+  asg_desired_capacity = 1
+  frontend_subnet_ids  = [module.network.private_subnet_ids[0], module.network.private_subnet_ids[1]]
+  backend_subnet_ids   = [module.network.private_subnet_ids[2], module.network.private_subnet_ids[3]]
+  frontend_tg_arn      = module.alb.frontend_tg_arn
+  backend_tg_arn       = module.alb.backend_tg_arn
+  frontend_lt_id        =  module.launch_templates.frontend_lt_id
+  backend_lt_id = module.launch_templates.backend_lt_id
+
+}
+
+# module "bastion" {
+#   source            = ".us-east-1/modules/bastion"
+#   ami_id            = "ami-04b4f1a9cf54c11d0"
+#   instance_type     = "t2.micro"
+#   key_name          = "ramanikey"
+#   public_subnet_id  = module.network.public_subnet_ids[0]
 #   security_group_id = module.security_group.security_group_id
-#   public_subnet_ids = [module.network.public_subnet_ids[1], module.network.public_subnet_ids[0]]
-#   frontend_tg_name  = "frontend-tg"
-#   backend_tg_name   = "backend-tg"
-#   vpc_id            = module.network.vpc_id
+# }
+
+# output "jump_server" {
+#   value = module.bastion.bastion_public_ip
 # }
 
 
@@ -172,19 +216,19 @@ module "secondary_security_group" {
 
 #############Secondary Alb ##################
 
-# module "secondary_alb" {
-#   source            = "./us-west-2/modules/load_balancers"
-#     providers = {
-#     aws = aws.secondary
-#   }
-#   frontend_alb_name = "frontend-alb"
-#   backend_alb_name  = "backend-alb"
-#   security_group_id = module.secondary_security_group.security_group_id
-#   public_subnet_ids = [module.secondary_network.public_subnet_ids[1], module.secondary_network.public_subnet_ids[0]]
-#   frontend_tg_name  = "frontend-tg"
-#   backend_tg_name   = "backend-tg"
-#   vpc_id            = module.secondary_network.vpc_id
-# }
+module "secondary_alb" {
+  source            = "./us-west-2/modules/load_balancers"
+    providers = {
+    aws = aws.secondary
+  }
+  frontend_alb_name = "frontend-alb"
+  backend_alb_name  = "backend-alb"
+  security_group_id = module.secondary_security_group.security_group_id
+  public_subnet_ids = [module.secondary_network.public_subnet_ids[1], module.secondary_network.public_subnet_ids[0]]
+  frontend_tg_name  = "frontend-tg"
+  backend_tg_name   = "backend-tg"
+  vpc_id            = module.secondary_network.vpc_id
+}
 
 # module "backup" {
 #   source              = "./us-west-2/modules/backup"
@@ -225,4 +269,41 @@ module "ami_backup" {
    frontend = aws_ami_from_instance.frontend.id 
    backend = aws_ami_from_instance.backend.id
 }
+}
+
+module "secondary_launch_templates" {
+  source = "./us-west-2/modules/launch_templates"
+
+  providers = {
+    aws = aws.secondary
+  }
+
+  frontend_lt_name  = "frontend-lt-west"
+  backend_lt_name   = "backend-lt-west"
+  key_name          = "ramanikey"
+  instance_type     = "t3.micro"
+  security_group_id = module.secondary_security_group.security_group_id
+
+  # Copied AMIs from us-east-1 → us-west-2
+  ami_id_frontend = module.ami_backup.copied_ami_ids["frontend"]
+  ami_id_backend  = module.ami_backup.copied_ami_ids["backend"]
+
+  frontend_user_data = "frontend.sh"
+  backend_user_data  = "backend.sh"
+}
+
+module "secondary_autoscaling" {
+  source               = "./us-west-2/modules/asg"
+  frontend_asg_name    = "frontend-asg"
+  backend_asg_name     = "backend-asg"
+  asg_min_size         = 1
+  asg_max_size         = 1
+  asg_desired_capacity = 1
+  frontend_subnet_ids  = [module.secondary_network.private_subnet_ids[0], module.secondary_network.private_subnet_ids[1]]
+  backend_subnet_ids   = [module.secondary_network.private_subnet_ids[2], module.secondary_network.private_subnet_ids[3]]
+  frontend_tg_arn      = module.secondary_alb.frontend_tg_arn
+  backend_tg_arn       = module.secondary_alb.backend_tg_arn
+  frontend_lt_west_id        =  module.secondary_launch_templates.frontend_lt_west_id
+  backend_lt_west_id = module.secondary_launch_templates.backend_lt_west_id
+
 }

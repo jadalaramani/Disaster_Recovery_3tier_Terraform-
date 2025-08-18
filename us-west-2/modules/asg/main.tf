@@ -7,7 +7,7 @@ resource "aws_autoscaling_group" "frontend_asg" {
   target_group_arns   = [var.frontend_tg_arn]
 
   launch_template {
-    id      = var.frontend_lt_id
+    id      = var.frontend_lt_west_id
     version = "$Latest"
   }
 }
@@ -21,7 +21,7 @@ resource "aws_autoscaling_group" "backend_asg" {
   target_group_arns   = [var.backend_tg_arn]
 
   launch_template {
-    id      = var.backend_lt_id
+    id      = var.backend_lt_west_id
     version = "$Latest"
   }
 }
