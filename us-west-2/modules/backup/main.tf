@@ -1,8 +1,3 @@
-# ---------------- Vault ----------------
-resource "aws_backup_vault" "this" {
-  name = var.vault_name
-}
-
 # ---------------- Plan ----------------
 resource "aws_backup_plan" "this" {
   name = var.plan_name
@@ -22,33 +17,36 @@ resource "aws_backup_plan" "this" {
   }
 }
 
-data "aws_caller_identity" "current" {}
+
+
+# data "aws_iam_role" "backup_role" {
+#   name = "AWSBackupDefaultServiceRole"
+# }
 
 # ---------------- Assignment ----------------
+
+
+# Use existing AWS Backup service role
+data "aws_iam_role" "backup_role" {
+  name = "AWSBackupDefaultServiceRole"
+}
+
+resource "aws_backup_vault" "this" {
+  name = var.vault_name
+}
+
+
 resource "aws_backup_selection" "this" {
-  iam_role_arn = aws_iam_role.backup_role.arn
+  iam_role_arn = data.aws_iam_role.backup_role.arn
   name         = "${var.plan_name}-assignment"
   plan_id      = aws_backup_plan.this.id
 
   resources = var.resource_assignments
 }
 
-# ---------------- IAM Role ----------------
-resource "aws_iam_role" "backup_role" {
-  name = "AWSBackupDefaultServiceRole"
-  assume_role_policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [{
-      Action    = "sts:AssumeRole"
-      Effect    = "Allow"
-      Principal = {
-        Service = "backup.amazonaws.com"
-      }
-    }]
-  })
-}
+data "aws_caller_identity" "current" {}
 
-resource "aws_iam_role_policy_attachment" "backup_attach" {
-  role       = aws_iam_role.backup_role.name
-  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSBackupServiceRolePolicyForBackup"
-}
+
+
+
+
