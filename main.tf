@@ -186,16 +186,43 @@ module "secondary_security_group" {
 #   vpc_id            = module.secondary_network.vpc_id
 # }
 
-module "backup" {
-  source              = "./us-west-2/modules/backup"
-  vault_name          = "dr-backup-vault"
-  plan_name           = "dr-backup-plan"
-  rule_name           = "daily-backup-rule"
-  source_region       = "us-east-1"
-  destination_region  = "us-west-2"
+# module "backup" {
+#   source              = "./us-west-2/modules/backup"
+#   vault_name          = "dr-backup-vault"
+#   plan_name           = "dr-backup-plan"
+#   rule_name           = "daily-backup-rule"
+#   source_region       = "us-east-1"
+#   destination_region  = "us-west-2"
 
-  resource_assignments = [
-    "arn:aws:ec2:us-east-1:141559732042:instance/i-002a75b4b9ded12ac",
-    "arn:aws:ec2:us-east-1:141559732042:instance/i-0f1829985058c5c4c"
-  ]
+#   resource_assignments = [
+#     "arn:aws:ec2:us-east-1:141559732042:instance/i-002a75b4b9ded12ac",
+#     "arn:aws:ec2:us-east-1:141559732042:instance/i-0f1829985058c5c4c"
+#   ]
+# }
+
+# create AMIs from instances in us-east-1
+resource "aws_ami_from_instance" "frontend" {
+  provider               = aws.primary
+  name                   = "frontend-backup"
+  source_instance_id     = "i-002a75b4b9ded12ac" # replace with your frontend instance ID
+}
+
+resource "aws_ami_from_instance" "backend" {
+  provider               = aws.primary
+  name                   = "backend-backup"
+  source_instance_id     = "i-0f1829985058c5c4c" # replace with your backend instance ID
+}
+
+# Then, copy them to us-west-2
+module "ami_backup" {
+  source = "./us-west-2/modules/ami_backup"
+
+  providers = {
+    aws = aws.secondary
+  }
+
+  source_amis     = {
+   frontend = aws_ami_from_instance.frontend.id 
+   backend = aws_ami_from_instance.backend.id
+}
 }
