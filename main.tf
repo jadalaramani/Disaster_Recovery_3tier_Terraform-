@@ -70,29 +70,40 @@ value = module.security_group.security_group_id
 }
 
 # Primary RDS
-module "rds" {
-  source               = "./us-east-1/modules/primary"
-   create_primary     = true
-  create_replica     = false
-  providers = {
-    aws = aws.primary
+# module "rds" {
+#   source               = "./us-east-1/modules/primary"
+#    create_primary     = true
+#   create_replica     = false
+#   providers = {
+#     aws = aws.primary
      
-  }
-  db_identifier        = "app-db"
-  db_engine            = "mysql"
-  db_instance_class    = "db.t3.micro"
-  db_allocated_storage = 25
-  db_name              = "test"
-  db_username          = "admin"
-  db_password          = "password123"
-  db_security_group_id = module.security_group.security_group_id
-  db_subnet_ids        = [
-    module.network.private_subnet_ids[0],
-    module.network.private_subnet_ids[1]
-  ]
-  backup_retention_period = 7
-}
+#   }
+#   db_identifier        = "app-db"
+#   db_engine            = "mysql"
+#   db_instance_class    = "db.t3.micro"
+#   db_allocated_storage = 25
+#   db_name              = "test"
+#   db_username          = "admin"
+#   db_password          = "password123"
+#   db_security_group_id = module.security_group.security_group_id
+#   db_subnet_ids        = [
+#     module.network.private_subnet_ids[0],
+#     module.network.private_subnet_ids[1]
+#   ]
+#   backup_retention_period = 7
+# }
 
+# # Module: Load Balancers
+module "alb" {
+  source            = "./us-east-1/modules/load_balancers"
+  frontend_alb_name = "frontend-alb"
+  backend_alb_name  = "backend-alb"
+  security_group_id = module.security_group.security_group_id
+  public_subnet_ids = [module.network.public_subnet_ids[1], module.network.public_subnet_ids[0]]
+  frontend_tg_name  = "frontend-tg"
+  backend_tg_name   = "backend-tg"
+  vpc_id            = module.network.vpc_id
+}
 
 
 # Secondary region
@@ -137,25 +148,39 @@ module "secondary_security_group" {
   egress_cidr_blocks = ["0.0.0.0/0"]
 }
 
-module "secondary_rds" {
-  source               = "./us-east-1/modules/primary"
-   create_primary     = false
-  create_replica     = true
+#####Secondary rds(Replica)
+
+# module "secondary_rds" {
+#   source               = "./us-east-1/modules/primary"
+#    create_primary     = false
+#   create_replica     = true
+#     providers = {
+#     aws = aws.secondary
+#   }
+#   db_identifier        = "app-db-replica"
+#   db_engine            = "mysql"
+
+#   replicate_source_db  = module.rds.db_arn
+#   db_instance_class    = "db.t3.micro"
+#   db_security_group_id = module.secondary_security_group.security_group_id
+#   db_subnet_ids        = [
+#     module.secondary_network.private_subnet_ids[4],
+#     module.secondary_network.private_subnet_ids[5]
+#   ]
+#   backup_retention_period = 7
+# }
+
+module "secondary_alb" {
+  source            = "./us-west-2/modules/load_balancers"
     providers = {
     aws = aws.secondary
   }
-  db_identifier        = "app-db-replica"
-  db_engine            = "mysql"
-
-  replicate_source_db  = module.rds.db_arn
-  db_instance_class    = "db.t3.micro"
-  db_security_group_id = module.secondary_security_group.security_group_id
-  db_subnet_ids        = [
-    module.secondary_network.private_subnet_ids[4],
-    module.secondary_network.private_subnet_ids[5]
-  ]
-  backup_retention_period = 7
+  frontend_alb_name = "frontend-alb"
+  backend_alb_name  = "backend-alb"
+  security_group_id = module.secondary_security_group.security_group_id
+  public_subnet_ids = [module.secondary_network.public_subnet_ids[1], module.secondary_network.public_subnet_ids[0]]
+  frontend_tg_name  = "frontend-tg"
+  backend_tg_name   = "backend-tg"
+  vpc_id            = module.secondary_network.vpc_id
 }
-
-
 
