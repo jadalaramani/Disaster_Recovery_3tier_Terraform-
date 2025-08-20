@@ -30,19 +30,6 @@ module "network" {
     { cidr = "170.20.8.0/24", az = "us-east-1b" }
   ]
 
-
-
-#  availability_zones   = ["us-east-1a", "us-east-1b", "us-east-1a", "us-east-1b", "us-east-1a", "us-east-1b"]  # ✅ Added this line
-
- 
-#  private_subnet_cidrs = [
-#     "170.20.3.0/24",
-#     "170.20.4.0/24",
-#     "170.20.5.0/24",
-#     "170.20.6.0/24",
-#     "170.20.7.0/24",
-#     "170.20.8.0/24"
-#   ]
 }
 
 output "vpc_output_from_nwmodule" {
@@ -70,28 +57,29 @@ value = module.security_group.security_group_id
 }
 
 # Primary RDS
-# module "rds" {
-#   source               = "./us-east-1/modules/primary"
-#    create_primary     = true
-#   create_replica     = false
-#   providers = {
-#     aws = aws.primary
+module "rds" {
+  source               = "./us-east-1/modules/primary"
+   create_primary     = true
+  create_replica     = false
+  providers = {
+    aws = aws.primary
      
-#   }
-#   db_identifier        = "app-db"
-#   db_engine            = "mysql"
-#   db_instance_class    = "db.t3.micro"
-#   db_allocated_storage = 25
-#   db_name              = "test"
-#   db_username          = "admin"
-#   db_password          = "password123"
-#   db_security_group_id = module.security_group.security_group_id
-#   db_subnet_ids        = [
-#     module.network.private_subnet_ids[0],
-#     module.network.private_subnet_ids[1]
-#   ]
-#   backup_retention_period = 7
-# }
+  }
+  db_identifier        = "app-db"
+  db_engine            = "mysql"
+  db_instance_class    = "db.t3.micro"
+  db_allocated_storage = 25
+  db_name              = "test"
+  db_username          = "admin"
+  db_password          = "password123"
+  db_security_group_id = module.security_group.security_group_id
+  db_subnet_ids        = [
+    module.network.private_subnet_ids[0],
+    module.network.private_subnet_ids[1]
+  ]
+  backup_retention_period = 7
+  
+}
 
 # # Module: Primary Load Balancers
 module "alb" {
@@ -136,19 +124,26 @@ module "autoscaling" {
 
 }
 
-# module "bastion" {
-#   source            = ".us-east-1/modules/bastion"
-#   ami_id            = "ami-04b4f1a9cf54c11d0"
-#   instance_type     = "t2.micro"
-#   key_name          = "ramanikey"
-#   public_subnet_id  = module.network.public_subnet_ids[0]
-#   security_group_id = module.security_group.security_group_id
-# }
+module "bastion" {
+  source            = "./us-east-1/modules/bastion"
+  ami_id            = "ami-04b4f1a9cf54c11d0"
+  instance_type     = "t2.micro"
+  key_name          = "ramanikey"
+  public_subnet_id  = module.network.public_subnet_ids[0]
+  security_group_id = module.security_group.security_group_id
+}
 
-# output "jump_server" {
-#   value = module.bastion.bastion_public_ip
-# }
+output "jump_server" {
+  value = module.bastion.bastion_public_ip
+}
 
+# module "route53" {
+#   source              = "./us-east-1/modules/route53"
+#   vpc_id              = module.network.vpc_id
+#   rds_endpoint        = module.rds.primary.rds_endpoint
+#   alb_dns_name        = module.alb.alb_backend_dns
+#   alb_front_dns_name = module.alb.alb_frontend_dns
+#}
 
 # Secondary region
 
@@ -194,25 +189,25 @@ module "secondary_security_group" {
 
 #####Secondary rds(Replica)
 
-# module "secondary_rds" {
-#   source               = "./us-east-1/modules/primary"
-#    create_primary     = false
-#   create_replica     = true
-#     providers = {
-#     aws = aws.secondary
-#   }
-#   db_identifier        = "app-db-replica"
-#   db_engine            = "mysql"
+module "secondary_rds" {
+  source               = "./us-east-1/modules/primary"
+   create_primary     = false
+  create_replica     = true
+    providers = {
+    aws = aws.secondary
+  }
+  db_identifier        = "app-db-replica"
+  db_engine            = "mysql"
 
-#   replicate_source_db  = module.rds.db_arn
-#   db_instance_class    = "db.t3.micro"
-#   db_security_group_id = module.secondary_security_group.security_group_id
-#   db_subnet_ids        = [
-#     module.secondary_network.private_subnet_ids[4],
-#     module.secondary_network.private_subnet_ids[5]
-#   ]
-#   backup_retention_period = 7
-# }
+  replicate_source_db  = module.rds.db_arn
+  db_instance_class    = "db.t3.micro"
+  db_security_group_id = module.secondary_security_group.security_group_id
+  db_subnet_ids        = [
+    module.secondary_network.private_subnet_ids[4],
+    module.secondary_network.private_subnet_ids[5]
+  ]
+  backup_retention_period = 7
+}
 
 #############Secondary Alb ##################
 
@@ -280,7 +275,7 @@ module "secondary_launch_templates" {
 
   frontend_lt_name  = "frontend-lt-west"
   backend_lt_name   = "backend-lt-west"
-  key_name          = "ramanikey"
+  key_name          = "uswestkey"
   instance_type     = "t3.micro"
   security_group_id = module.secondary_security_group.security_group_id
 
@@ -292,8 +287,13 @@ module "secondary_launch_templates" {
   backend_user_data  = "backend.sh"
 }
 
+# Secondary Autoscaling group
+
 module "secondary_autoscaling" {
   source               = "./us-west-2/modules/asg"
+    providers = {
+    aws = aws.secondary
+  }
   frontend_asg_name    = "frontend-asg"
   backend_asg_name     = "backend-asg"
   asg_min_size         = 1
@@ -303,7 +303,17 @@ module "secondary_autoscaling" {
   backend_subnet_ids   = [module.secondary_network.private_subnet_ids[2], module.secondary_network.private_subnet_ids[3]]
   frontend_tg_arn      = module.secondary_alb.frontend_tg_arn
   backend_tg_arn       = module.secondary_alb.backend_tg_arn
-  frontend_lt_west_id        =  module.secondary_launch_templates.frontend_lt_west_id
-  backend_lt_west_id = module.secondary_launch_templates.backend_lt_west_id
+  frontend_lt_west_id  =  module.secondary_launch_templates.frontend_lt_west_id
+  backend_lt_west_id   = module.secondary_launch_templates.backend_lt_west_id
+  depends_on = [module.secondary_launch_templates]
 
+}
+
+module "acm" {
+  providers = {
+    aws = aws.secondary
+  }
+  source      = "./us-west-2/modules/acm"
+  domain_name = "b15facebook.xyz"
+  san_names   = ["*.b15facebook.xyz"]
 }
