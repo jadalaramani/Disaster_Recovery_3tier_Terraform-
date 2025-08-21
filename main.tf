@@ -152,7 +152,9 @@ module "backend_healthcheck" {
 }
 
 
-# Secondary region
+##################Secondary region#################################
+
+###Secondary_network
 
 module "secondary_network" {
   source = "./us-west-2/modules/network"
@@ -176,7 +178,7 @@ module "secondary_network" {
   ]
 }
 
-# # Module: Security Groups
+# # Seconadry Security Groups
 module "secondary_security_group" {
   providers = {
     aws = aws.secondary
@@ -315,6 +317,8 @@ module "secondary_autoscaling" {
   depends_on = [module.secondary_launch_templates]
 
 }
+
+########Secondary Acm
 
 module "acm" {
   providers = {

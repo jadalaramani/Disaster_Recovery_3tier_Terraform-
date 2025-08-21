@@ -9,11 +9,6 @@ resource "aws_instance" "bastion" {
     Name = var.bastion_name
   }
 
-# lifecycle {
-#     prevent_destroy = true
-#     ignore_changes = [ami, instance_type, key_name]
-#   }
-
 }
 output "jump_server" {
   value = aws_instance.bastion.public_ip
