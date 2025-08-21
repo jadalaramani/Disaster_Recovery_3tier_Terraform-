@@ -9,17 +9,6 @@ variable "rds_private_zone_name" {
   default     = "rds.com"
 }
 
-variable "rds_record_name" {
-  description = "The record name for RDS endpoint"
-  type        = string
-  default     = "book.rds.com"
-}
-
-variable "rds_endpoint" {
-  description = "The RDS endpoint"
-  type        = string
-}
-
 variable "public_zone_name" {
   description = "The name of the public hosted zone"
   type        = string

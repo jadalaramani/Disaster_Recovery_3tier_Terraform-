@@ -99,7 +99,7 @@ module "launch_templates" {
   frontend_lt_name    = "frontend-lt"
   backend_lt_name     = "backend-lt"
   key_name            = "ramanikey"
-  ami_id_frontend     = "ami-0a70951509ea27356"
+  ami_id_frontend     = "ami-0eec7485a34edc3b8"
   ami_id_backend      = "ami-0084f9ebbb4f07bcd"
   instance_type       = "t2.micro"
   frontend_user_data  = "frontend.sh"
@@ -137,13 +137,20 @@ output "jump_server" {
   value = module.bastion.bastion_public_ip
 }
 
-# module "route53" {
-#   source              = "./us-east-1/modules/route53"
-#   vpc_id              = module.network.vpc_id
-#   rds_endpoint        = module.rds.primary.rds_endpoint
-#   alb_dns_name        = module.alb.alb_backend_dns
-#   alb_front_dns_name = module.alb.alb_frontend_dns
-#}
+module "route53" {
+  source              = "./us-east-1/modules/route53"
+  vpc_id              = module.network.vpc_id
+  alb_dns_name        = module.alb.alb_backend_dns
+  alb_front_dns_name = module.alb.alb_frontend_dns
+}
+
+module "backend_healthcheck" {
+  source = "./us-east-1/modules/healthcheck"
+
+  backend_alb_dns =  module.alb.alb_backend_dns
+  health_check_path = "/health"
+}
+
 
 # Secondary region
 
@@ -243,13 +250,13 @@ module "secondary_alb" {
 resource "aws_ami_from_instance" "frontend" {
   provider               = aws.primary
   name                   = "frontend-backup"
-  source_instance_id     = "i-002a75b4b9ded12ac" # replace with your frontend instance ID
+  source_instance_id     = "i-002a75b4b9ded12ac" 
 }
 
 resource "aws_ami_from_instance" "backend" {
   provider               = aws.primary
   name                   = "backend-backup"
-  source_instance_id     = "i-0f1829985058c5c4c" # replace with your backend instance ID
+  source_instance_id     = "i-0f1829985058c5c4c" 
 }
 
 # Then, copy them to us-west-2
@@ -314,6 +321,6 @@ module "acm" {
     aws = aws.secondary
   }
   source      = "./us-west-2/modules/acm"
-  domain_name = "b15facebook.xyz"
-  san_names   = ["*.b15facebook.xyz"]
+  domain_name = "b15catsvsdogs.xyz"
+  san_names   = ["*.b15catsvsdogs.xyz"]
 }
