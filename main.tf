@@ -74,8 +74,8 @@ module "rds" {
   db_password          = "password123"
   db_security_group_id = module.security_group.security_group_id
   db_subnet_ids        = [
-    module.network.private_subnet_ids[0],
-    module.network.private_subnet_ids[1]
+    module.network.private_subnet_ids[4],
+    module.network.private_subnet_ids[5]
   ]
   backup_retention_period = 7
   
