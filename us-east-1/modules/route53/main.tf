@@ -28,24 +28,24 @@ data "aws_route53_zone" "public_zone" {
 #   health_check_id = var.health_check_id
 # }
 
-resource "aws_route53_record" "alb_backend" {
-  zone_id = data.aws_route53_zone.public_zone.id
-  name    = var.alb_record_name
-  type    = "A"
-  set_identifier = "backend-primary"
+# resource "aws_route53_record" "alb_backend" {
+#   zone_id = data.aws_route53_zone.public_zone.id
+#   name    = var.alb_record_name
+#   type    = "A"
+#   set_identifier = "backend-primary"
 
-  alias {
-    name                   = var.alb_dns_name   # ALB DNS
-    zone_id                =  var.alb_zone_id   # ALB Hosted Zone ID (not Route53 zone)
-    evaluate_target_health = true
-  }
+#   alias {
+#     name                   = var.alb_dns_name   # ALB DNS
+#     zone_id                =  var.alb_zone_id   # ALB Hosted Zone ID (not Route53 zone)
+#     evaluate_target_health = true
+#   }
 
-  failover_routing_policy {
-    type = "PRIMARY"
-  }
+#   failover_routing_policy {
+#     type = "PRIMARY"
+#   }
 
-  health_check_id = var.health_check_id
-}
+#   health_check_id = var.health_check_id
+# }
 
 
 

@@ -11,6 +11,6 @@ output "rds_private_zone_id" {
 # }
 
 
-output "alb_zone_id" {
-  value = aws_route53_record.alb_backend.zone_id
-}
+# output "alb_zone_id" {
+#   value = aws_route53_record.alb_backend.zone_id
+# }

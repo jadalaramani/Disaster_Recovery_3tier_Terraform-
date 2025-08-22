@@ -144,16 +144,17 @@ module "route53" {
   vpc_id              = module.network.vpc_id
   alb_dns_name        = module.alb.alb_backend_dns
   alb_front_dns_name = module.alb.alb_frontend_dns
-  alb_zone_id = module.alb.alb_backend_zone_id
-  health_check_id =  module.backend_healthcheck.backend_healthcheck_id
+
+#  alb_zone_id = module.alb.alb_backend_zone_id
+#  health_check_id =  module.backend_healthcheck.backend_healthcheck_id
 }
 
-module "backend_healthcheck" {
-  source = "./us-east-1/modules/healthcheck"
+# module "backend_healthcheck" {
+#   source = "./us-east-1/modules/healthcheck"
 
-  backend_alb_dns =  module.alb.alb_backend_dns
-  #health_check_path = "/health"
-}
+#   backend_alb_dns =  module.alb.alb_backend_dns
+#   #health_check_path = "/health"
+# }
 
 
 ##################Secondary region#################################
@@ -296,15 +297,15 @@ module "secondary_autoscaling" {
 
 }
 
-module "secondary_route53" {
-  source              = "./us-west-2/modules/route53"
-   providers = {
-    aws = aws.secondary
-  }
-  vpc_id              = module.secondary_network.vpc_id
-  alb_dns_name        = module.secondary_alb.alb_backend_dns
-  alb_zone_id = module.secondary_alb.alb_backend_zone_id
-}
+# module "secondary_route53" {
+#   source              = "./us-west-2/modules/route53"
+#    providers = {
+#     aws = aws.secondary
+#   }
+#   vpc_id              = module.secondary_network.vpc_id
+#   alb_dns_name        = module.secondary_alb.alb_backend_dns
+#   alb_zone_id = module.secondary_alb.alb_backend_zone_id
+# }
 
 module "secondary_bastion" {
   source            = "./us-east-1/modules/bastion"
