@@ -4,13 +4,10 @@ output "rds_private_zone_id" {
 }
 
 
-
 # output "alb_record_fqdn" {
 #   description = "The fully qualified domain name (FQDN) for the ALB backend record"
 #   value       = aws_route53_record.alb_backend.fqdn
 # }
-
-
 output "alb_zone_id" {
-  value = aws_route53_record.alb_backend.zone_id
+  value = aws_route53_record.alb_backend_secondary.zone_id
 }

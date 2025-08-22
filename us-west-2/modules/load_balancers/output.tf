@@ -27,3 +27,7 @@ output "alb_backend_dns" {
   value       = aws_lb.backend_alb.dns_name
 }
 
+output "alb_backend_zone_id" {
+  description = "Hosted Zone ID of the backend ALB"
+  value       = aws_lb.backend_alb.zone_id
+}

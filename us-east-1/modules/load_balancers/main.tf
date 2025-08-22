@@ -37,6 +37,7 @@ resource "aws_lb_listener" "backend_listener" {
   }
 }
 
+
 # Target Groups
 resource "aws_lb_target_group" "frontend_tg" {
   name     = var.frontend_tg_name

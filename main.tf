@@ -131,7 +131,9 @@ module "bastion" {
   key_name          = "ramanikey"
   public_subnet_id  = module.network.public_subnet_ids[0]
   security_group_id = module.security_group.security_group_id
+
 }
+
 
 output "jump_server" {
   value = module.bastion.bastion_public_ip
@@ -142,13 +144,15 @@ module "route53" {
   vpc_id              = module.network.vpc_id
   alb_dns_name        = module.alb.alb_backend_dns
   alb_front_dns_name = module.alb.alb_frontend_dns
+  alb_zone_id = module.alb.alb_backend_zone_id
+  health_check_id =  module.backend_healthcheck.backend_healthcheck_id
 }
 
 module "backend_healthcheck" {
   source = "./us-east-1/modules/healthcheck"
 
   backend_alb_dns =  module.alb.alb_backend_dns
-  health_check_path = "/health"
+  #health_check_path = "/health"
 }
 
 
@@ -234,34 +238,8 @@ module "secondary_alb" {
   vpc_id            = module.secondary_network.vpc_id
 }
 
-# module "backup" {
-#   source              = "./us-west-2/modules/backup"
-#   vault_name          = "dr-backup-vault"
-#   plan_name           = "dr-backup-plan"
-#   rule_name           = "daily-backup-rule"
-#   source_region       = "us-east-1"
-#   destination_region  = "us-west-2"
 
-#   resource_assignments = [
-#     "arn:aws:ec2:us-east-1:141559732042:instance/i-002a75b4b9ded12ac",
-#     "arn:aws:ec2:us-east-1:141559732042:instance/i-0f1829985058c5c4c"
-#   ]
-# }
-
-# create AMIs from instances in us-east-1
-resource "aws_ami_from_instance" "frontend" {
-  provider               = aws.primary
-  name                   = "frontend-backup"
-  source_instance_id     = "i-002a75b4b9ded12ac" 
-}
-
-resource "aws_ami_from_instance" "backend" {
-  provider               = aws.primary
-  name                   = "backend-backup"
-  source_instance_id     = "i-0f1829985058c5c4c" 
-}
-
-# Then, copy them to us-west-2
+# create AMIs from instances in us-east-1 ,copy them to us-west-2
 module "ami_backup" {
   source = "./us-west-2/modules/ami_backup"
 
@@ -270,8 +248,8 @@ module "ami_backup" {
   }
 
   source_amis     = {
-   frontend = aws_ami_from_instance.frontend.id 
-   backend = aws_ami_from_instance.backend.id
+   frontend = "ami-0eec7485a34edc3b8"
+   backend = "ami-0084f9ebbb4f07bcd"
 }
 }
 
@@ -318,13 +296,29 @@ module "secondary_autoscaling" {
 
 }
 
-########Secondary Acm
+module "secondary_route53" {
+  source              = "./us-west-2/modules/route53"
+   providers = {
+    aws = aws.secondary
+  }
+  vpc_id              = module.secondary_network.vpc_id
+  alb_dns_name        = module.secondary_alb.alb_backend_dns
+  alb_zone_id = module.secondary_alb.alb_backend_zone_id
+}
 
-module "acm" {
+module "secondary_bastion" {
+  source            = "./us-east-1/modules/bastion"
   providers = {
     aws = aws.secondary
   }
-  source      = "./us-west-2/modules/acm"
-  domain_name = "b15catsvsdogs.xyz"
-  san_names   = ["*.b15catsvsdogs.xyz"]
+  ami_id            = "ami-03aa99ddf5498ceb9"
+  instance_type     = "t2.micro"
+  key_name          = "uswestkey"
+  public_subnet_id  = module.secondary_network.public_subnets[0]
+  security_group_id = module.secondary_security_group.security_group_id
+
+}
+
+output "secondary_jump_server" {
+  value = module.bastion.bastion_public_ip
 }

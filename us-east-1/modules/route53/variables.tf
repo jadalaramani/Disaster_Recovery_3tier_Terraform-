@@ -37,3 +37,11 @@ variable "alb_front_dns_name" {
   description = "The DNS name of the frot ALB"
   type        = string
 }
+variable "health_check_id" {
+  description = "Optional health check ID for primary failover record"
+  type        = string
+  default     = null
+}
+variable "alb_zone_id" {
+  type = string
+}
