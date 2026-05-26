@@ -12,13 +12,13 @@ variable "rds_private_zone_name" {
 variable "public_zone_name" {
   description = "The name of the public hosted zone"
   type        = string
-  default     = "b15catsvsdogs.xyz"
+  default     = "b17facebook.xyz"
 }
 
 variable "alb_record_name" {
   description = "The record name for the backend ALB"
   type        = string
-  default     = "api.b15catsvsdogs.xyz"
+  default     = "api.b17facebook.xyz"
 }
 
 variable "alb_dns_name" {
@@ -30,7 +30,7 @@ variable "alb_dns_frontend_record" {
   
   description = "The DNS name of the front end record ALB"
   type        = string
-  default =  "login.b15catsvsdogs.xyz"
+  default =  "login.b17facebook.xyz"
 }
 
 variable "alb_front_dns_name" {

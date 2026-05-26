@@ -99,9 +99,9 @@ module "launch_templates" {
   frontend_lt_name    = "frontend-lt"
   backend_lt_name     = "backend-lt"
   key_name            = "ramanikey"
-  ami_id_frontend     = "ami-0eec7485a34edc3b8"
-  ami_id_backend      = "ami-0084f9ebbb4f07bcd"
-  instance_type       = "t2.micro"
+  ami_id_frontend     = "ami-02b0f1836f615cd35"
+  ami_id_backend      = "ami-0852b89d488697547"
+  instance_type       = "t3.micro"
   frontend_user_data  = "frontend.sh"
   backend_user_data   = "backend.sh"
   security_group_id   = module.security_group.security_group_id
@@ -126,8 +126,8 @@ module "autoscaling" {
 
 module "bastion" {
   source            = "./us-east-1/modules/bastion"
-  ami_id            = "ami-04b4f1a9cf54c11d0"
-  instance_type     = "t2.micro"
+  ami_id            = "ami-01b14b7ad41e17ba4"
+  instance_type     = "t3.micro"
   key_name          = "ramanikey"
   public_subnet_id  = module.network.public_subnet_ids[0]
   security_group_id = module.security_group.security_group_id
@@ -214,7 +214,7 @@ module "secondary_rds" {
   db_engine            = "mysql"
 
   replicate_source_db  = module.rds.db_arn
-  db_instance_class    = "db.t3.micro"
+  db_instance_class    = "db.t4g.micro"
   db_security_group_id = module.secondary_security_group.security_group_id
   db_subnet_ids        = [
     module.secondary_network.private_subnet_ids[4],
@@ -249,8 +249,8 @@ module "ami_backup" {
   }
 
   source_amis     = {
-   frontend = "ami-0eec7485a34edc3b8"
-   backend = "ami-0084f9ebbb4f07bcd"
+   frontend = "ami-02b0f1836f615cd35"
+   backend = "ami-0852b89d488697547"
 }
 }
 
@@ -312,8 +312,8 @@ module "secondary_bastion" {
   providers = {
     aws = aws.secondary
   }
-  ami_id            = "ami-03aa99ddf5498ceb9"
-  instance_type     = "t2.micro"
+  ami_id            = "ami-043ab4148b7bb33e9"
+  instance_type     = "t3.micro"
   key_name          = "uswestkey"
   public_subnet_id  = module.secondary_network.public_subnets[0]
   security_group_id = module.secondary_security_group.security_group_id

@@ -10,7 +10,7 @@ resource "aws_route53_zone" "rds_private" {
 #   name = var.public_zone_name
 # }
 data "aws_route53_zone" "public_zone" {
-  name = "b15catsvsdogs.xyz"
+  name = "b17facebook.xyz"
 }
 # resource "aws_route53_record" "alb_backend" {
 #   #zone_id = "Z03144592RNZ1O5HJMDC4"
@@ -51,7 +51,7 @@ data "aws_route53_zone" "public_zone" {
 
 
 resource "aws_route53_record" "alb_frontend" {
-  zone_id = "Z03144592RNZ1O5HJMDC4"
+  zone_id = "Z0769242N5TFBRX2KOO5"
   name    = var.alb_dns_frontend_record
   type    = "CNAME"
   ttl     = 300

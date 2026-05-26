@@ -7,7 +7,7 @@ resource "aws_route53_zone" "rds_private" {
 }
 
 data "aws_route53_zone" "public_zone" {
-  name = "b15catsvsdogs.xyz"
+  name = "b17facebook.xyz"
 }
 # resource "aws_route53_record" "alb_backend" {
 #   #zone_id = "Z03144592RNZ1O5HJMDC4"
